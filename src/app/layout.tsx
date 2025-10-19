@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
+import Link from "next/link"
+import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 import "./globals.css";
 
@@ -21,10 +24,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        {children}
-        <Toaster position="bottom-center" />
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ThemeProvider>
+          <header className="border-b">
+            <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
+              <Link href="/" className="font-semibold tracking-tight">StartupAid</Link>
+              <nav className="flex items-center gap-2">
+                <Link className="text-sm text-muted-foreground hover:text-foreground" href="/">Home</Link>
+                <Link className="text-sm text-muted-foreground hover:text-foreground" href="/chat">Chat</Link>
+                <ThemeToggle />
+              </nav>
+            </div>
+          </header>
+          {children}
+          <Toaster position="bottom-center" />
+        </ThemeProvider>
       </body>
     </html>
   )
