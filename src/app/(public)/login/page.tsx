@@ -1,68 +1,73 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { supabase } from "@/lib/supabaseClient"
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-  const onSubmit = (formData: FormData) => {
-    const emailVal = String(formData.get("email") || "").trim()
-    const pwdVal = String(formData.get("password") || "")
-    if (!emailVal || !pwdVal) {
-      toast.error("E-Mail und Passwort sind erforderlich")
-      return
-    }
     startTransition(async () => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: emailVal,
-        password: pwdVal,
-      })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
       if (error) {
-        toast.error(error.message || "Anmeldung fehlgeschlagen")
-        return
+        toast.error(error.message);
+        return;
       }
-      toast.success("Willkommen zurück!")
-      router.replace("/chat")
-    })
+
+      // ⬇️ Hier wird die Session wirklich gesetzt
+      await supabase.auth.getSession();
+      router.refresh();
+
+      const redirectTo = searchParams.get("redirectTo") || "/chat";
+      toast.success("Login erfolgreich!");
+      router.replace(redirectTo);
+    });
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main className="min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-center">Anmelden</h1>
+          <h1 className="text-center text-2xl font-bold">Login</h1>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <form onSubmit={(e) => { e.preventDefault(); onSubmit(new FormData(e.currentTarget)) }} className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">E-Mail</Label>
-              <Input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="du@beispiel.de" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Passwort</Label>
-              <Input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-            </div>
-            <Button type="submit" disabled={isPending}>{isPending ? "Anmelden…" : "Anmelden"}</Button>
+        <CardContent>
+          <form onSubmit={handleLogin} className="flex flex-col gap-3">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Label>Passwort</Label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Anmelden..." : "Anmelden"}
+            </Button>
           </form>
-          <p className="text-sm text-center text-muted-foreground">
-            Noch kein Konto? <Link className="underline" href="/signup">Registrieren</Link>
-          </p>
         </CardContent>
       </Card>
     </main>
-  )
+  );
 }
-
-

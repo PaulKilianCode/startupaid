@@ -1,15 +1,15 @@
 "use client"
 
-import { createClient } from "@supabase/supabase-js"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  // Intentionally throw to surface misconfiguration early in dev
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY")
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Client-side Supabase instance using Next.js Auth Helpers
+export const supabase = createClientComponentClient({
+  cookieOptions: {
+    sameSite: "lax",
+    secure: false,
+    path: "/",
+    domain: undefined,
+  },
+})
 
 

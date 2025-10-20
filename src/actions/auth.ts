@@ -1,6 +1,7 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
+import { createServerClient } from "@supabase/ssr"
+import { cookies as nextCookies } from "next/headers"
 
 type AuthResult = {
   success: boolean
@@ -14,7 +15,30 @@ function getServerClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY")
   }
-  return createClient(supabaseUrl, supabaseAnonKey)
+  const cookieStore = nextCookies()
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get: (key) => cookieStore.get(key)?.value,
+      set: (key, value, options) => {
+        cookieStore.set({
+          name: key,
+          value,
+          ...options,
+          sameSite: "lax",
+          secure: false,
+        })
+      },
+      remove: (key, options) => {
+        cookieStore.set({
+          name: key,
+          value: "",
+          ...options,
+          sameSite: "lax",
+          secure: false,
+        })
+      },
+    },
+  })
 }
 
 export async function loginAction(_prev: AuthResult | undefined, formData: FormData): Promise<AuthResult> {
