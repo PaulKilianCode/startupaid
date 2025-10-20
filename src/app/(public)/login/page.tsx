@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, startTransition] = useTransition();
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,6 +40,17 @@ export default function LoginPage() {
       toast.success("Login erfolgreich!");
       router.replace(redirectTo);
     });
+  }
+
+  async function handleOAuthLogin() {
+    const redirectTo = (origin || "") + "/chat";
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+    if (error) {
+      toast.error(error.message);
+    }
   }
 
   return (
@@ -65,7 +78,18 @@ export default function LoginPage() {
             <Button type="submit" disabled={isPending}>
               {isPending ? "Anmelden..." : "Anmelden"}
             </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Kein Konto? <Link className="underline" href="/signup">Jetzt registrieren</Link>
+            </p>
           </form>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="h-px bg-border flex-1" />
+            <span className="text-xs text-muted-foreground">oder</span>
+            <div className="h-px bg-border flex-1" />
+          </div>
+          <Button className="mt-3 w-full" variant="outline" type="button" onClick={handleOAuthLogin}>
+            Mit Google anmelden
+          </Button>
         </CardContent>
       </Card>
     </main>
