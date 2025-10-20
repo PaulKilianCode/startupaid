@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
 import Link from "next/link"
+import { BrandLink } from "@/components/brand-link"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { TrendingUp } from "lucide-react"
@@ -33,10 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <header className="border-b">
             <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-6 h-6 text-primary" />
-                <Link href="/" className="font-semibold tracking-tight">StartupAid</Link>
-              </div>
+              <BrandLink />
               <div className="flex items-center gap-3">
                 <AuthNav />
                 <ThemeToggle />

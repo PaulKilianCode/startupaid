@@ -1,97 +1,70 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
+import { useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { supabase } from "@/lib/supabaseClient"
+import { useChat } from "ai/react"
+
+const SUGGESTIONS = [
+  "Beschreibe dein Unternehmen",
+  "Wir entwickeln eine KI-Lösung zur Reduzierung von Lebensmittelverschwendung durch intelligentes Bestands- und Preismanagement und suchen eine Erstfinanzierung.",
+]
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState("")
-  const [startupDescription, setStartupDescription] = useState("")
-  const storageKey = useMemo(() => "chat_session", [])
+  const inputRef = useRef(null)
+  const { messages, input, setInput, handleSubmit, isLoading, error, append } = useChat({
+    api: "/api/chat",
+  })
 
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setMessages(parsed.messages || [])
-        setStartupDescription(parsed.startupDescription || "")
-      } catch {}
-    }
-  }, [storageKey])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const payload = JSON.stringify({ messages, startupDescription })
-    localStorage.setItem(storageKey, payload)
-  }, [messages, startupDescription, storageKey])
-
-  const handleSend = async () => {
+  const onSubmit = (e) => {
+    e.preventDefault()
     if (!input.trim()) return
-    const newMsg = { role: "user", text: input }
-    setMessages(prev => [...prev, newMsg])
-    setInput("")
-
-    // Platzhalter-Antwort (später ersetzen durch KI-API)
-    const botReply = {
-      role: "bot",
-      text: `Danke! Ich habe verstanden: "${input}". Beschreib dein Startup unten, damit ich bessere Förderungen finde.`
-    }
-    setTimeout(() => setMessages(prev => [...prev, botReply]), 500)
+    handleSubmit(e)
   }
 
-  const handleSaveToCloud = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const payload = { messages, startupDescription }
-    await supabase.from("chats").upsert({
-      id: user.id,
-      content: payload,
-      updated_at: new Date().toISOString()
-    })
-  }
-
-  const handleLoadFromCloud = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { data } = await supabase.from("chats").select("content").eq("id", user.id).single()
-    if (data?.content) {
-      setMessages(data.content.messages || [])
-      setStartupDescription(data.content.startupDescription || "")
-    }
+  const useSuggestion = (text) => {
+    append({ role: "user", content: text })
   }
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
       <Card className="w-full max-w-3xl h-[80vh] flex flex-col">
         <CardContent className="flex flex-col gap-3 flex-grow overflow-y-auto p-4">
-          {messages.map((msg, i) => (
-            <div key={i} className={`p-2 rounded-md ${msg.role === "user" ? "bg-primary/10 self-end" : "bg-muted self-start"}`}>
-              {msg.text}
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center gap-3 mt-10">
+              <h2 className="text-xl font-semibold">Fördermittel-Assistent</h2>
+              <p className="text-sm text-muted-foreground">Stelle deine Frage oder starte mit einem Vorschlag:</p>
+              <div className="flex flex-col gap-2 w-full">
+                {SUGGESTIONS.map((s, i) => (
+                  <Button key={i} variant="outline" className="justify-start" onClick={() => useSuggestion(s)}>
+                    {s}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={`p-2 rounded-md max-w-[85%] whitespace-pre-wrap ${m.role === "user" ? "bg-primary/10 self-end" : "bg-muted self-start"}`}
+            >
+              {m.content}
             </div>
           ))}
-          <div className="mt-2 grid gap-2">
-            <label className="text-sm text-muted-foreground">Beschreibe dein Startup (Zielgruppe, Problem, Lösung, Markt):</label>
-            <Textarea asChild={false} rows={4} value={startupDescription} onChange={(e) => setStartupDescription(e.target.value)} placeholder="z.B. Eine App, die ..." />
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleLoadFromCloud}>Aus Cloud laden</Button>
-              <Button onClick={handleSaveToCloud}>In Cloud speichern</Button>
-            </div>
-          </div>
         </CardContent>
-        <div className="flex gap-2 p-4 border-t">
+        <form className="flex gap-2 p-4 border-t" onSubmit={onSubmit}>
           <Input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Frage zu Förderungen eingeben..."
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Frage zu Förderungen eingeben…"
           />
-          <Button onClick={handleSend}>Senden</Button>
-        </div>
+          <Button type="submit" disabled={isLoading}>Senden</Button>
+        </form>
+        {error ? <p className="px-4 pb-3 text-sm text-red-500">{String(error.message || error)}</p> : null}
       </Card>
     </main>
   )
 }
+
