@@ -40,7 +40,7 @@ export function AuthNav() {
     if (isAuthenticated) {
       router.push("/chat")
     } else {
-      router.push("/login?redirect=/chat")
+      router.push("/login?redirectTo=/chat")
     }
   }
 

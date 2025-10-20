@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useChat } from "ai/react"
 
 const SUGGESTIONS = [
-  "Beschreibe dein Unternehmen",
   "Wir entwickeln eine KI-Lösung zur Reduzierung von Lebensmittelverschwendung durch intelligentes Bestands- und Preismanagement und suchen eine Erstfinanzierung.",
 ]
 
