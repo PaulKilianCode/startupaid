@@ -84,12 +84,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 flex items-center gap-2">
             <div className="h-px bg-border flex-1" />
-            <span className="text-xs text-muted-foreground">oder</span>
-            <div className="h-px bg-border flex-1" />
           </div>
-          <Button className="mt-3 w-full" variant="outline" type="button" onClick={handleOAuthLogin}>
-            Mit Google anmelden
-          </Button>
         </CardContent>
       </Card>
     </main>
