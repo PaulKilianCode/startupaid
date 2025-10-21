@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server"
 import { cookies } from "next/headers"
-import { streamText } from "ai"
+import { streamText, type LanguageModelV1 } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const maxDuration = 60
 
 const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini"
@@ -78,8 +78,9 @@ export async function POST(req: NextRequest) {
       ? `${baseSystem} Startup-Idee/Kontext: ${startupDescription}`
       : baseSystem
 
+    const model = openAI(MODEL) as unknown as LanguageModelV1
     const result = await streamText({
-      model: openAI(MODEL) as any,
+      model,
       messages: [
         { role: "system", content: system },
         ...messages,

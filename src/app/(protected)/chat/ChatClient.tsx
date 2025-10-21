@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
+import type { HTMLAttributes, AnchorHTMLAttributes, OlHTMLAttributes, LiHTMLAttributes } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -22,7 +23,6 @@ type Props = {
 
 export default function ChatClient({ userId, initialMessages }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const [hasMounted, setHasMounted] = useState(false)
 
   const seededMessages: AIMsg[] = useMemo(
     () =>
@@ -39,15 +39,13 @@ export default function ChatClient({ userId, initialMessages }: Props) {
     initialMessages: seededMessages,
   })
 
-  useEffect(() => setHasMounted(true), [])
-
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!input.trim()) return
     handleSubmit(e)
   }
 
-  const useSuggestion = (text: string) => {
+  const applySuggestion = (text: string) => {
     append({ role: "user", content: text })
   }
 
@@ -66,17 +64,28 @@ export default function ChatClient({ userId, initialMessages }: Props) {
     return () => clearTimeout(t)
   }, [messages, userId, isLoading])
 
+  type HeadingProps = { node?: unknown } & HTMLAttributes<HTMLHeadingElement>
+  type ParagraphProps = { node?: unknown } & HTMLAttributes<HTMLParagraphElement>
+  type UlProps = { node?: unknown } & HTMLAttributes<HTMLUListElement>
+  type OlProps = { node?: unknown } & OlHTMLAttributes<HTMLOListElement>
+  type LiProps = { node?: unknown } & LiHTMLAttributes<HTMLLIElement>
+  type StrongProps = { node?: unknown } & HTMLAttributes<HTMLElement>
+  type AnchorProps = { node?: unknown } & AnchorHTMLAttributes<HTMLAnchorElement>
+  type CodeProps = { node?: unknown } & HTMLAttributes<HTMLElement>
+
   const mdComponents = useMemo(() => ({
-    h1: (props: any) => <h1 className="text-2xl font-bold mb-2" {...props} />,
-    h2: (props: any) => <h2 className="text-xl font-semibold mb-1" {...props} />,
-    h3: (props: any) => <h3 className="text-lg font-semibold mb-1" {...props} />,
-    p: (props: any) => <p className="mb-2 leading-relaxed" {...props} />,
-    ul: (props: any) => <ul className="list-disc ml-5 mb-2" {...props} />,
-    ol: (props: any) => <ol className="list-decimal ml-5 mb-2" {...props} />,
-    li: (props: any) => <li className="mb-1" {...props} />,
-    strong: (props: any) => <strong className="font-semibold" {...props} />,
-    a: (props: any) => <a className="text-blue-600 underline" target="_blank" rel="noreferrer" {...props} />,
-    code: (props: any) => <code className="px-1 py-0.5 rounded bg-muted" {...props} />,
+    h1: (props: HeadingProps) => <h1 className="text-2xl font-bold mb-2" {...props} />,
+    h2: (props: HeadingProps) => <h2 className="text-xl font-semibold mb-1" {...props} />,
+    h3: (props: HeadingProps) => <h3 className="text-lg font-semibold mb-1" {...props} />,
+    p: (props: ParagraphProps) => <p className="mb-2 leading-relaxed" {...props} />,
+    ul: (props: UlProps) => <ul className="list-disc ml-5 mb-2" {...props} />,
+    ol: (props: OlProps) => <ol className="list-decimal ml-5 mb-2" {...props} />,
+    li: (props: LiProps) => <li className="mb-1" {...props} />,
+    strong: (props: StrongProps) => <strong className="font-semibold" {...props} />,
+    a: (props: AnchorProps) => (
+      <a className="text-blue-600 underline" target="_blank" rel="noreferrer" {...props} />
+    ),
+    code: (props: CodeProps) => <code className="px-1 py-0.5 rounded bg-muted" {...props} />,
   }), [])
 
   return (
@@ -94,7 +103,7 @@ export default function ChatClient({ userId, initialMessages }: Props) {
               <p className="text-sm text-muted-foreground">Stelle deine Frage oder starte mit einem Vorschlag:</p>
               <div className="flex flex-col gap-2 w-full">
                 {SUGGESTIONS.map((s, i) => (
-                  <Button key={i} variant="outline" className="justify-start" onClick={() => useSuggestion(s)}>
+                  <Button key={i} variant="outline" className="justify-start" onClick={() => applySuggestion(s)}>
                     {s}
                   </Button>
                 ))}
@@ -122,7 +131,11 @@ export default function ChatClient({ userId, initialMessages }: Props) {
           />
           <Button type="submit" disabled={isLoading}>Senden</Button>
         </form>
-        {error ? <p className="px-4 pb-3 text-sm text-red-500">{String((error as any).message || error)}</p> : null}
+        {error ? (
+          <p className="px-4 pb-3 text-sm text-red-500">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
+        ) : null}
       </Card>
     </main>
   )

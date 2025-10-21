@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
-import Link from "next/link"
 import { BrandLink } from "@/components/brand-link"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { TrendingUp } from "lucide-react"
 
 import "./globals.css";
 

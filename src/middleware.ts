@@ -19,7 +19,6 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = req.nextUrl.pathname;
-  const publicPaths = new Set(["/", "/login", "/signup"]);
   const protectedPaths = ["/chat", "/dashboard"]; // erweitern, falls nötig
   const isProtected = protectedPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
