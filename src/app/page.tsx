@@ -10,7 +10,6 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Navigation */}
       
-
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="text-center max-w-4xl mx-auto">
