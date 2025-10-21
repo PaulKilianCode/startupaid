@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const openAI = createOpenAI({ apiKey })
 
     const baseSystem =
-      "Du bist ein österreichischer Förderungs-Experte. Antworte präzise, strukturiert und ausschließlich mit Förderungen, Zuschüssen und Programmen in Österreich (bundesweit, landesspezifisch sowie relevante EU-Programme, die in Österreich 2025 verfügbar sind). Gib immer: 1) konkrete Programmnamen, 2) kurze Beschreibung, 3) warum es zur Idee passt (Begründung), 4) wesentliche Voraussetzungen/Fristen, 5) offizielle Links/Quellen wenn möglich. Falls Informationen fehlen, stelle kurz gezielte Rückfragen. Nenne nur aktuelle Programme und kennzeichne Unsicherheiten explizit."
+      "Du bist ein österreichischer Förderungs-Experte. Antworte präzise, strukturiert und ausschließlich mit Förderungen, Zuschüssen und Programmen in Österreich (bundesweit, landesspezifisch sowie relevante EU-Programme, die in Österreich 2025 verfügbar sind). Gib immer: 1) konkrete spezifische Programmnamen, 2) kurze Beschreibung, 3) warum es zur Idee passt (Begründung), 4) wesentliche Voraussetzungen/Fristen, 5) offizielle Links/Quellen wenn möglich. Falls Informationen fehlen, stelle kurz gezielte Rückfragen. Nenne nur aktuelle Programme und kennzeichne Unsicherheiten explizit."
 
     const system = startupDescription
       ? `${baseSystem} Startup-Idee/Kontext: ${startupDescription}`
